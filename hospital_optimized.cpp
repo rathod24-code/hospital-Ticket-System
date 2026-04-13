@@ -1,7 +1,5 @@
 /*
  * Hospital Pharmacy & Lab – ECS 202
- * OPTIMIZED VERSION: clean OOP, minimal lines, full comments
- *
  * Flow:  Input → A(Sort) → B(Stack/Queue) → C(Circular List) → D(Hash) → E(BST)
  */
 
@@ -9,27 +7,21 @@
 #include <string>
 using namespace std;
 
-// ══════════════════════════════════════════════
-// CONSTANTS
-// ══════════════════════════════════════════════
-const int MAXN  = 10;     // max tickets (n ≤ 10)
-const int HT_SZ = 10;     // hash table size (m = 10)
-const int EMPTY = -1;     // hash slot never used
-const int TOMB  = -2;     // hash slot tombstone (deleted)
+const int MAXN  = 10;     
+const int HT_SZ = 10;     
+const int EMPTY = -1;     
+const int TOMB  = -2;     
 
-// ══════════════════════════════════════════════
-// 1. TICKET  (plain data holder)
-// ══════════════════════════════════════════════
+ 1. TICKET  (plain data holder)
 struct Ticket {
     int id, type, time, counter;
 };
 
 // ══════════════════════════════════════════════
-// 2. PART A  –  INSERTION SORT
-//    Keys: type asc → time asc → id asc
+ 2. PART A  –  INSERTION SORT
 // ══════════════════════════════════════════════
 
-// Returns true if ticket a should come BEFORE ticket b
+
 bool comes_before(const Ticket& a, const Ticket& b) {
     if (a.type != b.type)  return a.type < b.type;
     if (a.time != b.time)  return a.time < b.time;
@@ -40,7 +32,7 @@ void insertion_sort(Ticket t[], int n) {
     for (int i = 1; i < n; i++) {
         Ticket key = t[i];
         int j = i - 1;
-        // shift right until correct position found
+        
         while (j >= 0 && comes_before(key, t[j])) {
             t[j+1] = t[j];
             j--;
@@ -57,7 +49,7 @@ void print_sorted(const Ticket t[], int n) {
 }
 
 // ══════════════════════════════════════════════
-// 3. PART B  –  STACK  (array-based, LIFO)
+ 3. PART B  –  STACK  (array-based, LIFO)
 // ══════════════════════════════════════════════
 struct Stack {
     int data[MAXN];
@@ -68,7 +60,7 @@ struct Stack {
     int  pop()               { return data[top--]; }
     int  peek()        const { return data[top]; }
 
-    // print top → bottom
+    
     void print() const {
         if (empty()) { cout << "EMPTY"; return; }
         for (int i = top; i >= 0; i--) {
@@ -79,7 +71,7 @@ struct Stack {
 };
 
 // ══════════════════════════════════════════════
-// 4. PART B  –  QUEUE  (circular array, FIFO)
+4. PART B  –  QUEUE  (circular array, FIFO)
 // ══════════════════════════════════════════════
 struct Queue {
     int data[MAXN];
@@ -98,15 +90,13 @@ struct Queue {
 };
 
 // ══════════════════════════════════════════════
-// 5. PART B  –  DISPATCH  (stack first, then queue)
-//    Returns dispatch order for Parts C, D, E
+ 5. PART B  –  DISPATCH  (stack first, then queue)
 // ══════════════════════════════════════════════
 int run_dispatch(const Ticket sorted[], int n,
                  int out[], int& out_cnt) {
     Stack S;
     Queue Q;
 
-    // load: type 1 → stack, rest → queue (in sorted order)
     for (int i = 0; i < n; i++) {
         if (sorted[i].type == 1) S.push(sorted[i].id);
         else                     Q.enqueue(sorted[i].id);
@@ -116,7 +106,7 @@ int run_dispatch(const Ticket sorted[], int n,
     out_cnt = 0;
 
     while (!S.empty() || !Q.empty()) {
-        // serve: stack has priority
+    
         int served = (!S.empty()) ? S.pop() : Q.dequeue();
         out[out_cnt++] = served;
 
@@ -129,17 +119,16 @@ int run_dispatch(const Ticket sorted[], int n,
 }
 
 // ══════════════════════════════════════════════
-// 6. PART C  –  CIRCULAR LINKED LIST
-//    One node per counter; each node holds a list of IDs
+ 6. PART C  –  CIRCULAR LINKED LIST
 // ══════════════════════════════════════════════
 struct CNode {
     int  counter_no;
-    int  ids[MAXN];       // IDs assigned to this counter
+    int  ids[MAXN];       
     int  id_cnt = 0;
     CNode* next = nullptr;
 };
 
-// Build circle of k counters, return head (counter 1)
+
 CNode* build_circle(int k) {
     CNode* head = nullptr;
     CNode* tail = nullptr;
@@ -153,7 +142,7 @@ CNode* build_circle(int k) {
     return head;
 }
 
-// Round-robin assign each dispatched ID to counters
+
 void assign_round_robin(CNode* head, const int ids[], int cnt) {
     CNode* cur = head;
     for (int i = 0; i < cnt; i++) {
@@ -177,10 +166,10 @@ void print_counter_log(CNode* head, int k) {
 }
 
 // ══════════════════════════════════════════════
-// 7. PART D  –  HASH TABLE  (linear probing + tombstone)
-//    h(x) = x % 10,  size m = 10
+7. PART D  –  HASH TABLE  (linear probing + tombstone)
+
 // ══════════════════════════════════════════════
-int ht[HT_SZ];   // global hash table
+int ht[HT_SZ];   
 
 void ht_init()  { for (int i = 0; i < HT_SZ; i++) ht[i] = EMPTY; }
 
@@ -188,28 +177,26 @@ void ht_insert(int key) {
     int h = key % HT_SZ;
     for (int i = 0; i < HT_SZ; i++) {
         int idx = (h + i) % HT_SZ;
-        // insert at empty or tombstone slot
+        
         if (ht[idx] == EMPTY || ht[idx] == TOMB) { ht[idx] = key; return; }
-        if (ht[idx] == key) return;               // already present
+        if (ht[idx] == key) return;               
     }
 }
-
-// Returns {slot_index, probe_count}; slot = -1 → not found
 pair<int,int> ht_search(int key) {
     int h = key % HT_SZ, probes = 0;
     for (int i = 0; i < HT_SZ; i++) {
         int idx = (h + i) % HT_SZ;
         probes++;
-        if (ht[idx] == EMPTY) return {-1, probes};  // stop: definite miss
-        if (ht[idx] == key)   return {idx, probes};  // found
-        // TOMB → skip (tombstone), keep probing
+        if (ht[idx] == EMPTY) return {-1, probes};  
+        if (ht[idx] == key)   return {idx, probes};  
+        
     }
-    return {-1, probes};   // full table, not found
+    return {-1, probes};  
 }
 
 void ht_delete(int key) {
     auto [idx, _] = ht_search(key);
-    if (idx != -1) ht[idx] = TOMB;   // tombstone marker
+    if (idx != -1) ht[idx] = TOMB;   
 }
 
 void ht_print() {
@@ -223,8 +210,7 @@ void ht_print() {
 }
 
 // ══════════════════════════════════════════════
-// 8. PART E  –  BST  (Binary Search Tree)
-//    Standard: left < node < right
+ 8. PART E  –  BST  (Binary Search Tree)
 // ══════════════════════════════════════════════
 struct BNode {
     int   val;
@@ -239,7 +225,6 @@ BNode* bst_insert(BNode* root, int v) {
     return root;
 }
 
-// Three traversals fill separate output arrays
 void preorder (BNode* n, int a[], int& c) {
     if (!n) return;
     a[c++] = n->val;
@@ -281,10 +266,10 @@ void run_bst(const int dispatch[], int cnt) {
 }
 
 // ══════════════════════════════════════════════
-// MAIN  –  read input, call each part in order
+ MAIN  –  read input, call each part in order
 // ══════════════════════════════════════════════
 int main() {
-    // ── Input ──────────────────────────────────
+    
     int n;
     cout << "Enter n (number of tickets):\n";  cin >> n;
 
@@ -306,20 +291,20 @@ int main() {
     int kdel;
     cout << "Enter kdel (ticket to delete from hash):\n";  cin >> kdel;
 
-    // ── A : Sort ───────────────────────────────
+    
     insertion_sort(tickets, n);
     print_sorted(tickets, n);
 
-    // ── B : Dispatch (stack + queue) ───────────
+    
     int dispatch[MAXN], dcnt = 0;
     run_dispatch(tickets, n, dispatch, dcnt);
 
-    // ── C : Circular counter log ───────────────
+    
     CNode* circle = build_circle(k);
     assign_round_robin(circle, dispatch, dcnt);
     print_counter_log(circle, k);
 
-    // ── D : Hash table ─────────────────────────
+    
     ht_init();
     for (int i = 0; i < dcnt; i++) ht_insert(dispatch[i]);
 
@@ -336,7 +321,7 @@ int main() {
     ht_delete(kdel);
     ht_print();
 
-    // ── E : BST ────────────────────────────────
+    
     run_bst(dispatch, dcnt);
 
     return 0;
