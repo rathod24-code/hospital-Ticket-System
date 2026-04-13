@@ -43,3 +43,9 @@ g++ hospital_optimized.cpp -o hospital
 ---
 
 ## 📥 Input Format
+
+> **Ticket types:** `1` = Emergency, `2` = Normal, `3` = General
+
+---
+
+## 📤 Sample Output
