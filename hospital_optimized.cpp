@@ -1,7 +1,4 @@
-/*
- * Hospital Pharmacy & Lab – ECS 202
- * Flow:  Input → A(Sort) → B(Stack/Queue) → C(Circular List) → D(Hash) → E(BST)
- */
+
 
 #include <iostream>
 #include <string>
